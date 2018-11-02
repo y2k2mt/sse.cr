@@ -1,0 +1,10 @@
+name: sse
+version: 0.1.0
+
+authors:
+  - y2k2mt <y2.k2mt@gmail.com>
+
+description: |
+  A crystal shard for server-sent-events
+
+# license: MIT
