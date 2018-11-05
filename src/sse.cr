@@ -15,6 +15,7 @@ module HTTP::ServerSentEvents
     end
 
     def initialize(@uri : URI, @base_headers : HTTP::Headers = HTTP::Headers.new)
+      @abort = false
     end
 
     def on_message(&@on_message : EventMessage ->)
@@ -30,7 +31,11 @@ module HTTP::ServerSentEvents
       open(@uri)
     end
 
-    protected def open(uri : URI, last_event_id : String | Nil = nil) : Nil
+    def abort
+      @abort = true
+    end
+
+    protected def open(uri : URI, last_event_id : String | Nil = nil)
       headers = HTTP::Headers.new
       if last_event_id
         headers.add("Last-Event-Id", "#{last_event_id}")
@@ -40,55 +45,68 @@ module HTTP::ServerSentEvents
       headers.merge! @base_headers
       HTTP::Client.get(uri, headers: headers) do |response|
         status_code = response.status_code
-        io = response.body_io
         case status_code
         when 200
-            last_id = ""
-            retry = 0.to_i64
-            an_entry = [] of String
-            loop do
-              line = io.gets
-              if line
-                if line.empty? && an_entry.size != 0
-                  entry_hash = parse_to_hash(an_entry)
-                  last_id = entry_hash["id"].as(String)
-                  retry? = entry_hash["retry"].as(String).to_i64?
-                  if retry?
-                    retry = retry?
-                  end
-                  @on_message.try &.call(EventMessage.new(
-                    id: last_id,
-                    datas: entry_hash["datas"].as(Array(String)),
-                    retry: retry,
-                    event: entry_hash["event"].as(String)
-                  ))
-                  an_entry = [] of String
-                else
-                  an_entry = an_entry << line
+          last_id = ""
+          retry = 0.to_i64
+          an_entry = [] of String
+          io = response.try &.body_io
+          loop do
+            if @abort
+              break
+            end
+            line = io.gets
+            if line
+              if line.empty? && an_entry.size != 0
+                entry_hash = parse_to_hash(an_entry)
+                last_id = entry_hash["id"].as(String)
+                retry? = entry_hash["retry"].as(String).to_i64?
+                if retry?
+                  retry = retry?
                 end
+                @on_message.try &.call(EventMessage.new(
+                  id: last_id,
+                  datas: entry_hash["datas"].as(Array(String)),
+                  retry: retry,
+                  event: entry_hash["event"].as(String)
+                ))
+                an_entry = [] of String
               else
-                break
+                an_entry = an_entry << line
               end
+            else
+              break
             end
-            if !last_id.empty?
-              sleep retry / 1000
-              open(uri, last_id)
-            end
+          end
+          if !last_id.empty? && !@abort
+            sleep retry / 1000
+            open(uri, last_id)
+          end
         when 307
           location = response.headers["Location"]
           open(URI.parse(location))
         when 503
-          @on_error.try &.call({status_code: status_code, message: io.gets_to_end})
+          body = response.body_io?
+          if body
+            @on_error.try &.call({status_code: status_code, message: body.gets_to_end})
+          else
+            @on_error.try &.call({status_code: status_code, message: ""})
+          end
+          # Ignore date formatted header
           retry_after = response.headers["Retry-After"].to_i64?
           if retry_after
             sleep retry_after / 1000
             open(uri)
           end
         else
-          @on_error.try &.call({status_code: status_code, message: io.gets_to_end})
+          body = response.body_io?
+          if body
+            @on_error.try &.call({status_code: status_code, message: body.gets_to_end})
+          else
+            @on_error.try &.call({status_code: status_code, message: ""})
+          end
         end
       end
-      "E"
     end
 
     private def parse_to_hash(entry : Array(String)) : Hash(String, (String | Array(String)))
