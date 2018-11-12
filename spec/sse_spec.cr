@@ -50,6 +50,5 @@ describe HTTP::ServerSentEvents do
     end
     actual = channel.receive
     actual.should eq 400
-    event_source.abort
   end
 end
