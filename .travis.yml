@@ -1,7 +1,6 @@
 language: crystal
 crystal:
   - latest
-  - nightly
 install:
   - shards install
 script:
