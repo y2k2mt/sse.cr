@@ -1,0 +1,13 @@
+language: crystal
+crystal:
+  - latest
+  - nightly
+install:
+  - shards install
+script:
+    - apt-get update
+    - apt-get install nodejs
+    - apt-get install npm
+    - npm install
+    - npm start &
+    - crystal spec
