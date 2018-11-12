@@ -1,6 +1,8 @@
 Crystal shard for server-sent-events
 ===
 
+[![Build Status](https://travis-ci.org/y2k2mt/sse.cr.svg?branch=master)](https://travis-ci.org/y2k2mt/sse.cr)
+
 [Server-Sent-Events](https://www.w3.org/TR/2009/WD-eventsource-20090421/) library for crystal.
 
 Now on supports only client.

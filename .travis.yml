@@ -4,10 +4,12 @@ crystal:
   - nightly
 install:
   - shards install
+matrix:
+  allow_failures:
+    - crystal: nightly
 script:
-    - apt-get update
-    - apt-get install nodejs
-    - apt-get install npm
     - npm install
     - npm start &
     - crystal spec
+    - shards build
+    - bin/ameba
