@@ -5,6 +5,8 @@ module HTTP::ServerSentEvents
 
   class EventSource
 
+    @@default_retry_duration : Int64 = 3000.to_i64
+
     record EventMessage, event : String, datas : Array(String), id : String, retry : Int64
 
     def initialize(host : String, path : String, port : Int32, tls = false, headers : HTTP::Headers = HTTP::Headers.new)
@@ -44,7 +46,7 @@ module HTTP::ServerSentEvents
         HTTP::Client.get(uri, headers: prepare_headers(last_id)) do |response|
           case response.status_code
           when 200
-            retry = 0.to_i64
+            retry = @@default_retry_duration
             an_entry = [] of String
             io = response.try &.body_io
             loop do
