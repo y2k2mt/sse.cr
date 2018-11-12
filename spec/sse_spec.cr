@@ -19,6 +19,36 @@ describe HTTP::ServerSentEvents do
     event_source.abort
   end
 
+  it "Initialize without args" do
+    channel = Channel(Array(String)).new
+    event_source = HTTP::ServerSentEvents::EventSource.new
+    spawn do
+      event_source.on_message do |message|
+        channel.send(message.datas)
+      end
+      event_source.run(URI.parse("http://localhost:8080/events/"))
+    end
+    3.times do
+      actual = channel.receive
+      actual.size.should eq 2
+      (actual[1].to_i - actual[0].to_i).should eq 1
+    end
+    event_source.abort
+  end
+
+  it "Initialize and run without args" do
+    channel = Channel(Array(String)).new
+    event_source = HTTP::ServerSentEvents::EventSource.new
+    spawn do
+      event_source.on_message do |message|
+        channel.send(message.datas)
+      end
+    end
+    expect_raises URI::Error do
+      event_source.run
+    end
+  end
+
   it "Receive all events" do
     channel = Channel(HTTP::ServerSentEvents::EventSource::EventMessage).new
     event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/all/")
@@ -50,6 +80,5 @@ describe HTTP::ServerSentEvents do
     end
     actual = channel.receive
     actual.should eq 400
-    event_source.abort
   end
 end
