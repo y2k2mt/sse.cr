@@ -6,7 +6,7 @@ module HTTP::ServerSentEvents
     record EventMessage, event : String, datas : Array(String), id : String, retry : Int64
 
     def initialize(host : String, path : String, port : Int32, tls = false, headers : HTTP::Headers = HTTP::Headers.new)
-      shceme = tls ? "https" : "http"
+      scheme = tls ? "https" : "http"
       initialize(URI.new(scheme: scheme, host: host, path: path, port: port), headers)
     end
 

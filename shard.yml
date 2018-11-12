@@ -9,4 +9,9 @@ authors:
 description: |
   A crystal shard for server-sent-events
 
+development_dependencies:
+  ameba:
+    github: veelenga/ameba
+    version: 0.8.1
+
 license: MIT
