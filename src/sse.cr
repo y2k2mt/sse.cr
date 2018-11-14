@@ -94,7 +94,7 @@ module HTTP::ServerSentEvents
             if retry_after
               sleep retry_after / 1000
             else
-              @aboart = true
+              @abort = true
             end
           else
             body = response.body_io?
