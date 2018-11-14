@@ -94,7 +94,7 @@ module HTTP::ServerSentEvents
             if retry_after
               sleep retry_after / 1000
             else
-              @aboart = true
+              @abort = true
             end
           else
             body = response.body_io?
@@ -120,7 +120,7 @@ module HTTP::ServerSentEvents
     end
 
     private def parse_to_hash(entry : Array(String)) : Hash(String, (String | Array(String)))
-      event_source = {"id" => "", "datas" => [] of String, "retry" => "1000", "event" => ""}
+      event_source = {"id" => "", "datas" => [] of String, "retry" => "#{@@default_retry_duration}", "event" => ""}
       entry.each { |line|
         i = line.index(':')
         if i
