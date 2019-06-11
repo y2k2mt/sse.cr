@@ -2,7 +2,7 @@ require "uri"
 require "http/client"
 
 module HTTP::ServerSentEvents
-  record EventMessage, event : String, datas : Array(String), id : String, retry : Int64
+  record EventMessage, event : String?, data : Array(String), id : String?, retry : Int64
 
   class EventSource
     @@default_retry_duration : Int64 = 3000.to_i64
@@ -33,7 +33,7 @@ module HTTP::ServerSentEvents
       @abort = true
     end
 
-    def run(uri : URI = @uri, last_id : (String | Nil) = nil)
+    def run(uri : URI = @uri, last_id : String? = nil)
       if !uri
         raise URI::Error.new("Endpoint URI must be specified")
       end
@@ -44,38 +44,27 @@ module HTTP::ServerSentEvents
         HTTP::Client.get(uri, headers: prepare_headers(last_id)) do |response|
           case response.status_code
           when 200
-            retry = @@default_retry_duration
             an_entry = [] of String
             io = response.try &.body_io
+            last_message = nil
             loop do
               if @abort
                 break
               end
               line = io.gets
-              if line
-                if line.empty? && an_entry.size != 0
-                  entry_hash = parse_to_hash(an_entry)
-                  last_id = entry_hash["id"].as(String)
-                  contains_retry = entry_hash["retry"].as(String).to_i64?
-                  if contains_retry
-                    retry = contains_retry
-                  end
-                  @on_message.try &.call(EventMessage.new(
-                    id: last_id,
-                    datas: entry_hash["datas"].as(Array(String)),
-                    retry: retry,
-                    event: entry_hash["event"].as(String)
-                  ))
-                  an_entry = [] of String
-                else
-                  an_entry = an_entry << line
-                end
-              else
+              if !line
                 break
               end
+              if line.empty? && an_entry.size != 0
+                last_message = parse_event_message(an_entry)
+                an_entry = [] of String
+                @on_message.try &.call(last_message.not_nil!)
+              else
+                an_entry = an_entry << line
+              end
             end
-            if (last_id && !last_id.empty?) && !@abort
-              sleep retry / 1000
+            if !last_message.not_nil!.id.try &.empty? && !@abort
+              sleep last_message.not_nil!.retry / 1000
             end
           when 307
             location = response.headers["Location"]
@@ -117,22 +106,34 @@ module HTTP::ServerSentEvents
       headers.merge! @base_headers
     end
 
-    private def parse_to_hash(entry : Array(String)) : Hash(String, (String | Array(String)))
-      event_source = {"id" => "", "datas" => [] of String, "retry" => "#{@@default_retry_duration}", "event" => ""}
+    private def parse_event_message(entry : Array(String)) : EventMessage
+      id, event, retry = nil, nil, nil
+      event_datas = [] of String
       entry.each { |line|
-        i = line.index(':')
-        if i
-          field_name = line[0...i]
-          field_value = line[i + 2..line.size - 1]
+        field_delimiter = line.index(':')
+        if field_delimiter
+          field_name = line[0...field_delimiter]
+          field_value = line[field_delimiter + 2..line.size - 1]
           case field_name
+          when "id"
+            id = field_value
           when "data"
-            event_source["datas"].as(Array(String)) << field_value
+            event_datas << field_value
+          when "retry"
+            retry = field_value
+          when "event"
+            event = field_value
           else
-            event_source[field_name] = field_value
+            raise "Undefined field '#{field_name}'"
           end
         end
       }
-      event_source
+      EventMessage.new(
+        id: id,
+        data: event_datas,
+        retry: retry.try &.to_i64? || @@default_retry_duration,
+        event: event,
+      )
     end
   end
 end

@@ -7,7 +7,7 @@ describe HTTP::ServerSentEvents do
     event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/events/")
     spawn do
       event_source.on_message do |message|
-        channel.send(message.datas)
+        channel.send(message.data)
       end
       event_source.run
     end
@@ -24,7 +24,7 @@ describe HTTP::ServerSentEvents do
     event_source = HTTP::ServerSentEvents::EventSource.new
     spawn do
       event_source.on_message do |message|
-        channel.send(message.datas)
+        channel.send(message.data)
       end
       event_source.run(URI.parse("http://localhost:8080/events/"))
     end
@@ -41,7 +41,7 @@ describe HTTP::ServerSentEvents do
     event_source = HTTP::ServerSentEvents::EventSource.new
     spawn do
       event_source.on_message do |message|
-        channel.send(message.datas)
+        channel.send(message.data)
       end
     end
     expect_raises URI::Error do
@@ -62,9 +62,9 @@ describe HTTP::ServerSentEvents do
       actual = channel.receive
       actual.retry.should eq 2000
       actual.event.should eq "usermessage"
-      actual.datas.size.should eq 2
-      actual.datas[0].should eq "foo"
-      actual.datas[1].should eq "bar"
+      actual.data.size.should eq 2
+      actual.data[0].should eq "foo"
+      actual.data[1].should eq "bar"
     end
     event_source.abort
   end
