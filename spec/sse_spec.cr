@@ -50,7 +50,7 @@ describe HTTP::ServerSentEvents do
   end
 
   it "Receive all events" do
-    channel = Channel(HTTP::ServerSentEvents::EventSource::EventMessage).new
+    channel = Channel(HTTP::ServerSentEvents::EventMessage).new
     event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/all/")
     spawn do
       event_source.on_message do |message|
