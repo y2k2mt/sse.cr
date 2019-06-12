@@ -1,7 +1,6 @@
-require "spec"
-require "../src/sse"
+require "../spec_helper"
 
-describe HTTP::ServerSentEvents do
+describe HTTP::ServerSentEvents::EventSource do
   it "Receive 3 events" do
     channel = Channel(Array(String)).new
     event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/events/")
@@ -16,35 +15,35 @@ describe HTTP::ServerSentEvents do
       actual.size.should eq 2
       (actual[1].to_i - actual[0].to_i).should eq 1
     end
-    event_source.abort
+    event_source.stop
   end
 
   it "Initialize without args" do
     channel = Channel(Array(String)).new
-    event_source = HTTP::ServerSentEvents::EventSource.new
+    event_source = HTTP::ServerSentEvents::EventSource.new(URI.parse("http://localhost:8080/events/"))
     spawn do
       event_source.on_message do |message|
         channel.send(message.data)
       end
-      event_source.run(URI.parse("http://localhost:8080/events/"))
+      event_source.run
     end
     3.times do
       actual = channel.receive
       actual.size.should eq 2
       (actual[1].to_i - actual[0].to_i).should eq 1
     end
-    event_source.abort
+    event_source.stop
   end
 
   it "Initialize and run without args" do
     channel = Channel(Array(String)).new
-    event_source = HTTP::ServerSentEvents::EventSource.new
+    event_source = HTTP::ServerSentEvents::EventSource.new("")
     spawn do
       event_source.on_message do |message|
         channel.send(message.data)
       end
     end
-    expect_raises URI::Error do
+    expect_raises ArgumentError do
       event_source.run
     end
   end
@@ -66,7 +65,7 @@ describe HTTP::ServerSentEvents do
       actual.data[0].should eq "foo"
       actual.data[1].should eq "bar"
     end
-    event_source.abort
+    event_source.stop
   end
 
   it "Invaluid endpoint" do
