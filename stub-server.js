@@ -7,7 +7,7 @@ var counter = 0;
 var id = 0;
 
 app.get('/events/', function (req, res) {
-	req.socket.setTimeout(Number.MAX_VALUE);
+	req.socket.setTimeout(2147483647);
 	res.writeHead(200, {
 		'Content-Type': 'text/event-stream',
 		'Cache-Control': 'no-cache',
@@ -18,7 +18,7 @@ app.get('/events/', function (req, res) {
 })
 
 app.get('/all/', function (req, res) {
-	req.socket.setTimeout(Number.MAX_VALUE);
+	req.socket.setTimeout(2147483647);
 	res.writeHead(200, {
 		'Content-Type': 'text/event-stream',
 		'Cache-Control': 'no-cache',
