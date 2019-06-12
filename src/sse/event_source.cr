@@ -71,6 +71,7 @@ module HTTP::ServerSentEvents
         if line.empty? && an_entry.size != 0
           last_message = parse_event_message(an_entry)
           an_entry = [] of String
+          last_message.not_nil!.id.try { |id| @last_id = id }
           @on_message.try &.call(last_message.not_nil!)
         else
           an_entry = an_entry << line
