@@ -35,7 +35,6 @@ sse.run
 ```
 
 ## How to test
----
 
 ```shell
 # Running node sse server
