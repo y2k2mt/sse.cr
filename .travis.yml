@@ -8,8 +8,6 @@ matrix:
   allow_failures:
     - crystal: nightly
 script:
-    - npm install
-    - npm start &
-    - crystal spec
-    - shards build
+    - crystal tool format --check
     - bin/ameba
+    - crystal spec
