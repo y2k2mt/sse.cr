@@ -1,5 +1,5 @@
 name: sse
-version: 0.3.0
+version: 0.4.0
 
 crystal: 0.29.0
 
@@ -7,7 +7,7 @@ authors:
   - y2k2mt <y2.k2mt@gmail.com>
 
 description: |
-  A crystal shard for server-sent-events
+  A Crystal shard for Server-Sent Events
 
 development_dependencies:
   ameba:
