@@ -24,7 +24,7 @@ dependencies:
 
 
 ```crystal
-sse = HTTP::ServerSentEvents::EventSource.new("http://app/ssedemo")
+sse = HTTP::ServerSentEvents::EventSource.new("http://sse/endpoint")
 
 sse.on_message do |message|
   # Recieving messages from server
@@ -32,17 +32,6 @@ sse.on_message do |message|
 end
 
 sse.run
-```
-
-## How to test
-
-```shell
-# Running node sse server
-npm install
-npm start &
-
-# Run specs
-crystal spec
 ```
 
 ## Contributing
