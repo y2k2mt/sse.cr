@@ -3,7 +3,7 @@ require "../spec_helper"
 describe HTTP::ServerSentEvents::EventSource do
   it "Receive 3 events" do
     channel = Channel(Array(String)).new
-    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/events/")
+    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{SPEC_SERVER_PORT}/events/")
     spawn do
       event_source.on_message do |message|
         channel.send(message.data)
@@ -20,7 +20,7 @@ describe HTTP::ServerSentEvents::EventSource do
 
   it "Initialize without args" do
     channel = Channel(Array(String)).new
-    event_source = HTTP::ServerSentEvents::EventSource.new(URI.parse("http://localhost:8080/events/"))
+    event_source = HTTP::ServerSentEvents::EventSource.new(URI.parse("http://localhost:#{SPEC_SERVER_PORT}/events/"))
     spawn do
       event_source.on_message do |message|
         channel.send(message.data)
@@ -50,7 +50,7 @@ describe HTTP::ServerSentEvents::EventSource do
 
   it "Receive all events" do
     channel = Channel(HTTP::ServerSentEvents::EventMessage).new
-    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/all/")
+    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{SPEC_SERVER_PORT}/all/")
     spawn do
       event_source.on_message do |message|
         channel.send(message)
@@ -70,7 +70,7 @@ describe HTTP::ServerSentEvents::EventSource do
 
   it "Invaluid endpoint" do
     channel = Channel(Int32).new
-    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:8080/badrequest/")
+    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{SPEC_SERVER_PORT}/badrequest/")
     spawn do
       event_source.on_error do |err|
         channel.send(err[:status_code])
@@ -81,3 +81,5 @@ describe HTTP::ServerSentEvents::EventSource do
     actual.should eq 400
   end
 end
+
+stop_stub_server
