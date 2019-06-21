@@ -23,9 +23,6 @@ module HTTP::ServerSentEvents
     def on_error(&@on_error : NamedTuple(status_code: Int32, message: String) ->)
     end
 
-    def on_close(&@on_close : String ->)
-    end
-
     def stop
       @abort = true
     end
