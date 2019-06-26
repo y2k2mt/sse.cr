@@ -3,9 +3,7 @@
 [![Build Status](https://travis-ci.org/y2k2mt/sse.cr.svg?branch=master)](https://travis-ci.org/y2k2mt/sse.cr)
 [![Releases](https://img.shields.io/github/release/y2k2mt/sse.cr.svg?maxAge=360)](https://github.com/y2k2mt/sse.cr/releases)
  
-[Server-Sent-Events](https://www.w3.org/TR/2009/WD-eventsource-20090421/) library for crystal.
-
-Now supports only client.
+[Server-Sent Events](https://www.w3.org/TR/2009/WD-eventsource-20090421/) server/client for Crystal.
 
 ## Installation
 
@@ -15,16 +13,17 @@ Now supports only client.
 dependencies:
   sse:
     github: y2k2mt/sse.cr
-    version: 0.3.0
+    version: 0.4.0
 ```
 
 2. Run `shards install`
 
 ## Usage
 
+### Client
 
 ```crystal
-sse = HTTP::ServerSentEvents::EventSource.new("http://sse/endpoint")
+sse = HTTP::ServerSentEvents::EventSource.new("http://127.0.0.1:8080")
 
 sse.on_message do |message|
   # Recieving messages from server
@@ -32,6 +31,40 @@ sse.on_message do |message|
 end
 
 sse.run
+```
+
+### Server
+
+```crystal
+server = HTTP::Server.new [
+  HTTP::ServerSentEventsHandler.new { |es, _|
+    es.source {
+      # Derivering event data per 1 second.
+      sleep 1
+      HTTP::ServerSentEvents::EventMessage.new(
+        data: ["foo", "bar"],
+      )
+    }
+  },
+]
+
+server.bind_tcp "127.0.0.1", 8080
+server.listen
+```
+
+Running server and you can get then:
+
+```
+$ curl 127.0.0.1:8080 -H "Accept: text/event-stream"
+
+data: foo
+data: bar
+
+data: foo
+data: bar
+
+...
+
 ```
 
 ## Contributing

@@ -1,9 +1,8 @@
 require "uri"
 require "http/client"
+require "./event_message"
 
 module HTTP::ServerSentEvents
-  record EventMessage, event : String?, data : Array(String), id : String?, retry : Int64
-
   class EventSource
     @@default_retry_duration : Int64 = 3000.to_i64
 
@@ -75,7 +74,9 @@ module HTTP::ServerSentEvents
         end
       end
       if !last_message.not_nil!.id.try &.empty? && !@abort
-        sleep last_message.not_nil!.retry / 1000
+        last_message.not_nil!.retry.try do |r|
+          sleep r / 1000
+        end
       end
     end
 
@@ -100,7 +101,7 @@ module HTTP::ServerSentEvents
     private def prepare_headers
       headers = HTTP::Headers.new
       if @last_id
-        headers.add("Last-Event-Id", "#{@last_id}")
+        headers.add("Last-Event-ID", "#{@last_id}")
       end
       headers.add("Accept", "text/event-stream")
       headers.add("Cache-Control", "no-cache")
