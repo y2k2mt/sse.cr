@@ -111,11 +111,16 @@ module HTTP::ServerSentEvents
     private def parse_event_message(entry : Array(String)) : EventMessage
       id, event, retry = nil, nil, nil
       event_datas = [] of String
-      entry.each { |line|
+      entry.each_with_index { |line, i|
         field_delimiter = line.index(':')
         if field_delimiter
           field_name = line[0...field_delimiter]
-          field_value = line[field_delimiter + 2..line.size - 1]
+          field_value = line[field_delimiter + 2..line.size - 1]?
+        elsif !line.empty?
+          field_name = line
+          field_value = entry[i + 1]?
+        end
+        if field_name && field_value
           case field_name
           when "id"
             id = field_value
@@ -126,7 +131,7 @@ module HTTP::ServerSentEvents
           when "event"
             event = field_value
           else
-            raise "Undefined field '#{field_name}'"
+            # Ignore
           end
         end
       }

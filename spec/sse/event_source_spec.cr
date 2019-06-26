@@ -35,6 +35,39 @@ describe HTTP::ServerSentEvents::EventSource do
     event_source.stop
   end
 
+  it "Contains invalid format" do
+    channel = Channel(Array(String)).new
+    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{SPEC_SERVER_PORT}/invalid-format/")
+    spawn do
+      event_source.on_message do |message|
+        channel.send(message.data)
+      end
+      event_source.run
+    end
+    3.times do
+      actual = channel.receive
+      actual.size.should eq 0
+    end
+    event_source.stop
+  end
+
+  it "Contains multiline format" do
+    channel = Channel(Array(String)).new
+    event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{SPEC_SERVER_PORT}/multiline-format/")
+    spawn do
+      event_source.on_message do |message|
+        channel.send(message.data)
+      end
+      event_source.run
+    end
+    3.times do
+      actual = channel.receive
+      actual.size.should eq 1
+      actual[0].should eq "data"
+    end
+    event_source.stop
+  end
+
   it "Initialize and run without args" do
     channel = Channel(Array(String)).new
     event_source = HTTP::ServerSentEvents::EventSource.new("")

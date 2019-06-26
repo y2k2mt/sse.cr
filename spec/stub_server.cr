@@ -36,6 +36,21 @@ module HTTP::ServerSentEvents
           context.response.flush
           sleep 2
         end
+      when "/invalid-format/"
+        loop do
+          context.response.print("data\n")
+          context.response.print("\n")
+          context.response.print("data:\n\n")
+          context.response.flush
+          sleep 2
+        end
+      when "/multiline-format/"
+        loop do
+          context.response.print("data\n")
+          context.response.print("data\n\n")
+          context.response.flush
+          sleep 2
+        end
       when "/badrequest/"
         context.response.status_code = 400
       else
