@@ -5,9 +5,9 @@ class HTTP::ServerSentEventsHandler
   include HTTP::Handler
 
   struct EventStream
-    getter last_event_id
+    getter last_event_id : String?
 
-    def initialize(@io : IO, @last_event_id : String? = nil)
+    def initialize(@io : IO, @last_event_id = nil)
     end
 
     def source(&@event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
@@ -16,28 +16,24 @@ class HTTP::ServerSentEventsHandler
 
     private def sink(message : HTTP::ServerSentEvents::EventMessage)
       message.id.try do |id|
-        @io.print("id: #{id}\n")
+        @io.puts "id: #{id}"
       end
       message.retry.try do |retry|
-        @io.print("retry: #{retry}\n")
+        @io.puts "retry: #{retry}"
       end
       message.event.try do |event|
-        @io.print("event: #{event}\n")
+        @io.puts "event: #{event}"
       end
       message.data.each do |data|
-        @io.print("data: #{data}\n")
+        @io.puts "data: #{data}"
       end
-      @io.print("\n")
+      @io.puts
       @io.flush
     end
 
     def run
       loop do
-        @event_source.try do |e|
-          e.call.try do |m|
-            sink m
-          end
-        end
+        @event_source.try(&.call).try { |message| sink message }
       end
     end
   end
@@ -46,13 +42,14 @@ class HTTP::ServerSentEventsHandler
   end
 
   def call(context)
-    if acceptable_request? context.request
+    request = context.request
+    if acceptable_request? request
       response = context.response
       response.content_type = "text/event-stream"
       response.headers["Cache-Control"] = "no-cache"
       response.headers["Connection"] = "keep-alive"
       response.upgrade do |io|
-        stream = EventStream.new io, context.request.headers["Last-Event-ID"]?
+        stream = EventStream.new(io, request.headers["Last-Event-ID"]?)
         @proc.call(stream, context).run
         io.close
       end
@@ -62,6 +59,6 @@ class HTTP::ServerSentEventsHandler
   end
 
   private def acceptable_request?(request)
-    request.headers["Accept"]?.try &.== "text/event-stream"
+    request.headers["Accept"]? == "text/event-stream"
   end
 end
