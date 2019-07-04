@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/y2k2mt/sse.cr.svg?branch=master)](https://travis-ci.org/y2k2mt/sse.cr)
 [![Releases](https://img.shields.io/github/release/y2k2mt/sse.cr.svg?maxAge=360)](https://github.com/y2k2mt/sse.cr/releases)
- 
+
 [Server-Sent Events](https://www.w3.org/TR/2009/WD-eventsource-20090421/) server/client for Crystal.
 
 ## Installation
@@ -26,7 +26,7 @@ dependencies:
 sse = HTTP::ServerSentEvents::EventSource.new("http://127.0.0.1:8080")
 
 sse.on_message do |message|
-  # Recieving messages from server
+  # Receiving messages from server
   p message.data
 end
 
@@ -39,7 +39,7 @@ sse.run
 server = HTTP::Server.new [
   HTTP::ServerSentEventsHandler.new { |es, _|
     es.source {
-      # Derivering event data per 1 second.
+      # Delivering event data every 1 second.
       sleep 1
       HTTP::ServerSentEvents::EventMessage.new(
         data: ["foo", "bar"],
