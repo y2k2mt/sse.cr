@@ -85,10 +85,18 @@ module HTTP::ServerSentEvents
         status_code: response.status_code,
         message:     response.body_io?.try(&.gets_to_end) || "",
       })
-      # Ignore date formatted header
-      response.headers["Retry-After"]?.try(&.to_i64?).try { |retry_after|
-        sleep retry_after / 1000
+      response.headers["Retry-After"]?.try { |retry_after|
+        retry_after.to_i64?.try { |delay_seconds|
+          sleep delay_seconds / 1000
+        } || http_date?(retry_after)
       } || stop
+    end
+
+    private def http_date?(retry_after : String)
+      delay_seconds = (Time::Format::HTTP_DATE.parse(retry_after) - Time.utc).total_seconds
+      sleep delay_seconds if delay_seconds > 0
+    rescue e : Time::Format::Error
+      nil
     end
 
     private def prepare_headers : HTTP::Headers
