@@ -1,7 +1,7 @@
 name: sse
-version: 0.5.0
+version: 0.6.0
 
-crystal: 0.29.0
+crystal: 0.28.0, 0.29.0, 0.30.0, 0.30.1
 
 authors:
   - y2k2mt <y2.k2mt@gmail.com>
@@ -11,7 +11,7 @@ description: |
 
 development_dependencies:
   ameba:
-    github: veelenga/ameba
-    version: 0.10.0
+    github: crystal-ameba/ameba
+    version: ~> 0.10.0
 
 license: MIT
