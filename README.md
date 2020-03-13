@@ -1,4 +1,4 @@
-# server-sent-events
+# Server-Sent Events
 
 [![Build Status](https://travis-ci.org/y2k2mt/sse.cr.svg?branch=master)](https://travis-ci.org/y2k2mt/sse.cr)
 [![Releases](https://img.shields.io/github/release/y2k2mt/sse.cr.svg?maxAge=360)](https://github.com/y2k2mt/sse.cr/releases)
@@ -13,7 +13,6 @@
 dependencies:
   sse:
     github: y2k2mt/sse.cr
-    version: 0.6.0
 ```
 
 2. Run `shards install`
@@ -23,6 +22,8 @@ dependencies:
 ### Client
 
 ```crystal
+require "sse"
+
 sse = HTTP::ServerSentEvents::EventSource.new("http://127.0.0.1:8080")
 
 sse.on_message do |message|
@@ -36,6 +37,8 @@ sse.run
 ### Server
 
 ```crystal
+require "sse"
+
 server = HTTP::Server.new [
   HTTP::ServerSentEventsHandler.new { |es, _|
     es.source {
