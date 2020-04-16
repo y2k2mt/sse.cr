@@ -24,12 +24,12 @@ module HTTP::ServerSentEvents
     end
 
     def stop : Nil
-      Log.info { "Stop to listening event source from #{@uri}" }
+      LOG.info { "Stop to listening event source from #{@uri}" }
       @abort = true
     end
 
     def run : Nil
-      Log.info { "Start to listening event source from #{@uri}" }
+      LOG.info { "Start to listening event source from #{@uri}" }
       loop do
         break if abort?
 
