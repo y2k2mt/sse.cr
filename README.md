@@ -40,7 +40,7 @@ sse.run
 require "sse"
 
 server = HTTP::Server.new [
-  HTTP::ServerSentEventsHandler.new { |es, _|
+  HTTP::ServerSentEvents::Handler.new { |es, _|
     es.source {
       # Delivering event data every 1 second.
       sleep 1

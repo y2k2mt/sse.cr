@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-describe HTTP::ServerSentEventsHandler do
+describe HTTP::ServerSentEvents::Handler do
   it "Receive 3 events" do
     counter = 0
     server = HTTP::Server.new [
@@ -37,7 +37,7 @@ describe HTTP::ServerSentEventsHandler do
 
   it "Receive all events" do
     server = HTTP::Server.new [
-      HTTP::ServerSentEventsHandler.new { |es, _|
+      HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source {
           sleep 1
           HTTP::ServerSentEvents::EventMessage.new(
