@@ -1,6 +1,7 @@
 require "uri"
 require "http/client"
 require "./event_message"
+require "./log"
 
 module HTTP::ServerSentEvents
   class EventSource
@@ -23,13 +24,16 @@ module HTTP::ServerSentEvents
     end
 
     def stop : Nil
+      LOG.info { "[#{@uri}] Stop to listening event source" }
       @abort = true
     end
 
     def run : Nil
+      LOG.info { "[#{@uri}] Start to listening event source" }
       loop do
         break if abort?
 
+        LOG.info { "[#{@uri}] Preparing to send request to the endpoint : #{prepare_headers}" }
         HTTP::Client.get(@uri, headers: prepare_headers) do |response|
           case response.status
           when .ok?
@@ -53,6 +57,7 @@ module HTTP::ServerSentEvents
       lines = [] of String
       io = response.body_io
       last_message = nil
+      LOG.debug { "[#{@uri}] Response from the endpoint has been successfully received." }
 
       loop do
         break if @abort
@@ -77,6 +82,7 @@ module HTTP::ServerSentEvents
 
     private def temporary_redirect(response)
       location = response.headers["Location"]
+      LOG.warn { "[#{@uri}] A response from the endpoint indicates another endpoint [#{location}]" }
       @uri = URI.parse(location)
     end
 
@@ -85,6 +91,7 @@ module HTTP::ServerSentEvents
         status_code: response.status_code,
         message:     response.body_io?.try(&.gets_to_end) || "",
       })
+      LOG.warn { "[#{@uri}] The endpoint temporary unavailable due to #{response.body_io?.try(&.gets_to_end)}" }
       response.headers["Retry-After"]?.try { |retry_after|
         retry_after.to_i64?.try { |delay_seconds|
           sleep delay_seconds / 1000
@@ -96,6 +103,7 @@ module HTTP::ServerSentEvents
       delay_seconds = (Time::Format::HTTP_DATE.parse(retry_after) - Time.utc).total_seconds
       sleep delay_seconds if delay_seconds > 0
     rescue e : Time::Format::Error
+      LOG.warn { "[#{@uri}] The endpoint responses invalid format Retry-After header [#{retry_after}]" }
       nil
     end
 
