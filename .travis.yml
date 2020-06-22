@@ -10,4 +10,4 @@ matrix:
 script:
     - crystal tool format --check
     - bin/ameba
-    - crystal spec
+    - crystal spec -v
