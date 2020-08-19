@@ -9,9 +9,11 @@ module HTTP::ServerSentEvents
       getter last_event_id : String?
 
       def initialize(@io : IO, @last_event_id = nil)
+        @event_sources = {} of String => -> EventMessage?
       end
 
-      def source(&@event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
+      def source(key : String = "default", &event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
+        @event_sources[key] = event_source
         self
       end
 
@@ -34,7 +36,9 @@ module HTTP::ServerSentEvents
 
       def run
         loop do
-          @event_source.try(&.call).try { |message| sink message }
+          @event_sources.each do |event_name, event_source|
+            event_source.try &.call.try { |message| sink message }
+          end
         end
       end
     end
