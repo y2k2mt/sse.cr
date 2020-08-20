@@ -40,13 +40,18 @@ module HTTP::ServerSentEvents
         @event_sources.each do |event_name, event_source|
           spawn do
             loop do
-              event_source.try &.call.try { |message| sink message }
+              event_source.try &.call.try do |message|
+                unless event_name == DEFAULT_EVENT_SOURCE_KEY
+                  sink message.copy_with(event: event_name)
+                else
+                  sink message
+                end
+              end
             end
           end
         end
         sleep
       end
-
     end
 
     def initialize(&@proc : EventStream, Server::Context -> EventStream)
