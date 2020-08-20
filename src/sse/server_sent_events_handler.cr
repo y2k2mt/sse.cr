@@ -41,7 +41,7 @@ module HTTP::ServerSentEvents
           spawn do
             loop do
               event_source.try &.call.try do |message|
-                unless event_name == DEFAULT_EVENT_SOURCE_KEY
+                if event_name != DEFAULT_EVENT_SOURCE_KEY
                   sink message.copy_with(event: event_name)
                 else
                   sink message
