@@ -8,11 +8,13 @@ module HTTP::ServerSentEvents
     struct EventStream
       getter last_event_id : String?
 
+      DEFAULT_EVENT_SOURCE_KEY = "_default"
+
       def initialize(@io : IO, @last_event_id = nil)
         @event_sources = {} of String => -> EventMessage?
       end
 
-      def source(key : String = "default", &event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
+      def source(key : String = DEFAULT_EVENT_SOURCE_KEY, &event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
         @event_sources[key] = event_source
         self
       end
@@ -35,12 +37,16 @@ module HTTP::ServerSentEvents
       end
 
       def run
-        loop do
-          @event_sources.each do |event_name, event_source|
-            event_source.try &.call.try { |message| sink message }
+        @event_sources.each do |event_name, event_source|
+          spawn do
+            loop do
+              event_source.try &.call.try { |message| sink message }
+            end
           end
         end
+        sleep
       end
+
     end
 
     def initialize(&@proc : EventStream, Server::Context -> EventStream)
