@@ -8,14 +8,18 @@ module HTTP::ServerSentEvents
     struct EventStream
       getter last_event_id : String?
 
+      DEFAULT_EVENT_SOURCE_KEY = "_default"
+
       def initialize(@io : IO, @last_event_id = nil)
+        @event_sources = {} of String => -> EventMessage?
       end
 
-      def source(&@event_source : -> HTTP::ServerSentEvents::EventMessage?) : EventStream
+      def source(key : String = DEFAULT_EVENT_SOURCE_KEY, &event_source : -> EventMessage?) : EventStream
+        @event_sources[key] = event_source
         self
       end
 
-      private def sink(message : HTTP::ServerSentEvents::EventMessage)
+      private def sink(message : EventMessage)
         message.id.try do |id|
           @io.puts "id: #{id}"
         end
@@ -29,13 +33,30 @@ module HTTP::ServerSentEvents
           @io.puts "data: #{data}"
         end
         @io.puts
-        @io.flush
+        begin
+          @io.flush
+        rescue e : IO::Error
+          LOG.debug { e.inspect }
+        end
       end
 
       def run
-        loop do
-          @event_source.try(&.call).try { |message| sink message }
+        mutex = Mutex.new
+        @event_sources.each do |event_name, event_source|
+          spawn do
+            loop do
+              event_source.try &.call.try do |message|
+                if event_name != DEFAULT_EVENT_SOURCE_KEY
+                  message = message.copy_with(event: event_name)
+                end
+                mutex.synchronize do
+                  sink message
+                end
+              end
+            end
+          end
         end
+        sleep
       end
     end
 
