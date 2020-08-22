@@ -86,7 +86,7 @@ describe HTTP::ServerSentEvents::Handler do
             retry: 2000,
           )
         }.source("67g") {
-          sleep 1.1
+          sleep 1.3
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
@@ -102,41 +102,52 @@ describe HTTP::ServerSentEvents::Handler do
     end
     channel = Channel(HTTP::ServerSentEvents::EventMessage).new
     event_source = HTTP::ServerSentEvents::EventSource.new("http://localhost:#{port}/all/")
+
     spawn do
       event_source.on_message do |message|
         channel.send(message)
       end
       event_source.run
     end
-
-    actuals = [] of HTTP::ServerSentEvents::EventMessage
-    6.times do
-      actuals << channel.receive
-    end
-    actuals.each_with_index do |actual, i|
+    8.times do |i|
       case i
       when 0
+        actual = channel.receive
         actual.event.should eq "57f"
         actual.retry.should eq 2000
         actual.data.size.should eq 2
         actual.data[0].should eq "foo"
         actual.data[1].should eq "bar"
       when 1
+        actual = channel.receive
         actual.event.should eq "67g"
         actual.retry.should eq 1000
         actual.data.size.should eq 2
         actual.data[0].should eq "baz"
         actual.data[1].should eq "qux"
       when 2
+        actual = channel.receive
         actual.event.should eq "57f"
       when 3
+        actual = channel.receive
         actual.event.should eq "67g"
       when 4
+        actual = channel.receive
         actual.event.should eq "57f"
       when 5
+        actual = channel.receive
         actual.event.should eq "67g"
+      when 6
+        actual = channel.receive
+        actual.event.should eq "57f"
+        # '57f' pass '67g'
+      when 7
+        actual = channel.receive
+        actual.event.should eq "57f"
       end
-      event_source.stop
     end
+
+    event_source.stop
+    server.close
   end
 end
