@@ -9,7 +9,7 @@ def start_stub_server
     backend = Log::IOBackend.new
     Log.builder.bind "http.server_sent_events", :debug, backend
     address = HTTP::ServerSentEvents.current_stub_server.bind_tcp port
-    puts "Listening on http://#{address}"
+    HTTP::ServerSentEvents::LOG.info { "Listening on http://#{address}" }
     HTTP::ServerSentEvents.current_stub_server.listen
   end
   port
