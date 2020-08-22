@@ -184,7 +184,7 @@ describe HTTP::ServerSentEvents::Handler do
       end
       event_source.run
     end
-    8.times do |i|
+    8.times do
       actual = channel.receive
       if actual.event == "57f"
         actual.retry.should eq 2000
@@ -236,7 +236,7 @@ describe HTTP::ServerSentEvents::Handler do
       end
       event_source.run
     end
-    8.times do |i|
+    8.times do
       actual = channel.receive
       if actual.id == "43e"
         actual.event.should be_nil
