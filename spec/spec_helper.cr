@@ -6,10 +6,7 @@ require "log"
 def start_stub_server
   port = Random.rand(40000..65535)
   spawn do
-    backend = Log::IOBackend.new
-    Log.builder.bind "http.server_sent_events", :debug, backend
-    address = HTTP::ServerSentEvents.current_stub_server.bind_tcp port
-    HTTP::ServerSentEvents::LOG.info { "Listening on http://#{address}" }
+    HTTP::ServerSentEvents.current_stub_server.bind_tcp port
     HTTP::ServerSentEvents.current_stub_server.listen
   end
   port
