@@ -1,3 +1,5 @@
 bin/
 lib/
 .crystal-version
+.tool-versions
+shard.lock
