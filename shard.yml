@@ -1,7 +1,7 @@
 name: sse
 version: 0.10.0
 
-crystal: 0.36.0
+crystal: 1.0.0
 
 authors:
   - y2k2mt <y2.k2mt@gmail.com>
