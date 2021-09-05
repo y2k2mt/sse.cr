@@ -1,0 +1,24 @@
+name: Crystal CI Nightly
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image: crystallang/crystal:nightly
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: shards install
+    - name: Code formatting
+      run: crystal tool format --check
+    - name: Code inspection with ameba
+      run: bin/ameba src
+    - name: Run specs
+      run: crystal spec -v
