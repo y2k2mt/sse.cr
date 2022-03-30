@@ -18,7 +18,7 @@ jobs:
       run: shards install
     - name: Code formatting
       run: crystal tool format --check
-    - name: Code inspection with ameba
-      run: bin/ameba src
+#    - name: Code inspection with ameba
+#      run: bin/ameba src
     - name: Run specs
       run: crystal spec -v
