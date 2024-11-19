@@ -6,7 +6,7 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEventsHandler.new { |es, _|
         es.source {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             data: ["#{counter += 1}", "#{counter += 1}"],
           )
@@ -39,7 +39,7 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source("usermessage") {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
@@ -78,14 +78,14 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source("57f") {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
         }.source("67g") {
-          sleep 1.3
+          sleep Time::Span.new(seconds: 1,nanoseconds: 3000000)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
@@ -154,14 +154,14 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source("57f") {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
         }.source("67g") {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
@@ -206,14 +206,14 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source {
-          sleep 2
+          sleep Time::Span.new(seconds: 2)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
         }.source("67g") {
-          sleep 1
+          sleep Time::Span.new(seconds: 1)
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
