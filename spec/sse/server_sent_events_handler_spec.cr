@@ -78,14 +78,14 @@ describe HTTP::ServerSentEvents::Handler do
     server = HTTP::Server.new [
       HTTP::ServerSentEvents::Handler.new { |es, _|
         es.source("57f") {
-          sleep Time::Span.new(seconds: 1)
+          sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
         }.source("67g") {
-          sleep Time::Span.new(seconds: 1,nanoseconds: 3000000)
+          sleep 1.3.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
