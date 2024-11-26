@@ -75,7 +75,7 @@ module HTTP::ServerSentEvents
 
       unless last_message.not_nil!.id.try(&.empty?) && @abort
         last_message.not_nil!.retry.try do |retry_after_seconds|
-          sleep Time::Span.new(seconds: retry_after_seconds)
+          sleep (retry_after_seconds).seconds
         end
       end
     end
@@ -94,7 +94,7 @@ module HTTP::ServerSentEvents
       LOG.warn { "[#{@uri}] The endpoint temporary unavailable due to #{response.body_io?.try(&.gets_to_end)}" }
       response.headers["Retry-After"]?.try { |retry_after|
         retry_after.to_i64?.try { |delay_seconds|
-          sleep Time::Span.new(seconds: delay_seconds)
+          sleep (delay_seconds).seconds
         } || http_date?(retry_after)
       } || stop
     end
@@ -102,7 +102,7 @@ module HTTP::ServerSentEvents
     private def http_date?(retry_after : String)
       delay_seconds = (Time::Format::HTTP_DATE.parse(retry_after) - Time.utc).total_seconds
       if delay_seconds > 0
-        sleep Time::Span.new(seconds: delay_seconds.to_i64)
+        sleep (delay_seconds.to_i64).seconds
       end
     rescue e : Time::Format::Error
       LOG.warn { "[#{@uri}] The endpoint responses invalid format Retry-After header [#{retry_after}]" }
