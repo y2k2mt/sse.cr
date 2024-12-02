@@ -73,10 +73,10 @@ module HTTP::ServerSentEvents
         end
       end
 
-      unless last_message.not_nil!.id.try(&.empty?) && @abort
-        last_message.not_nil!.retry.try do |retry_after_seconds|
+      unless last_message.try(&.id.try(&.empty?)) && @abort
+        last_message.try(&.retry.try do |retry_after_seconds|
           sleep (retry_after_seconds).seconds
-        end
+        end)
       end
     end
 
