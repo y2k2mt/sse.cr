@@ -1,6 +1,6 @@
 # Server-Sent Events
 
-[![Build Status](https://travis-ci.org/y2k2mt/sse.cr.svg?branch=master)](https://travis-ci.org/y2k2mt/sse.cr)
+[![Build Status](https://github.com/y2k2mt/sse.cr/actions/workflows/crystal.yml/badge.svg)](https://github.com/y2k2mt/sse.cr/actions/workflows/crystal.yml)
 [![Releases](https://img.shields.io/github/release/y2k2mt/sse.cr.svg?maxAge=360)](https://github.com/y2k2mt/sse.cr/releases)
 
 [Server-Sent Events](https://www.w3.org/TR/eventsource/) server/client for Crystal.
