@@ -18,7 +18,7 @@ module HTTP::ServerSentEvents
           context.response.print("data: #{counter += 1}\n")
           context.response.print("data: #{counter += 1}\n\n")
           context.response.flush
-          sleep 2
+          sleep 2.seconds
         end
       when "/all/"
         context.response.content_type = "text/event-stream"
@@ -34,7 +34,7 @@ module HTTP::ServerSentEvents
           context.response.print("data: foo\n")
           context.response.print("data: bar\n\n")
           context.response.flush
-          sleep 2
+          sleep 2.seconds
         end
       when "/invalid-format/"
         loop do
@@ -42,14 +42,14 @@ module HTTP::ServerSentEvents
           context.response.print("\n")
           context.response.print("data:\n\n")
           context.response.flush
-          sleep 2
+          sleep 2.seconds
         end
       when "/multiline-format/"
         loop do
           context.response.print("data\n")
           context.response.print("data\n\n")
           context.response.flush
-          sleep 2
+          sleep 2.seconds
         end
       when "/badrequest/"
         context.response.status_code = 400
