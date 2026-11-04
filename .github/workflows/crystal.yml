@@ -14,12 +14,12 @@ jobs:
       image: crystallang/crystal
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Install dependencies
       run: shards install
     - name: Code formatting
       run: crystal tool format --check
-#    - name: Code inspection with ameba
-#      run: bin/ameba src
+    - name: Code inspection with ameba
+      uses: crystal-ameba/github-action@v1.0.1
     - name: Run specs
       run: crystal spec -v
