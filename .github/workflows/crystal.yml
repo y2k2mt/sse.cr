@@ -20,6 +20,6 @@ jobs:
     - name: Code formatting
       run: crystal tool format --check
     - name: Code inspection with ameba
-      uses: crystal-ameba/github-action@v1.0.1
+      uses: crystal-ameba/github-action@v1.0.0
     - name: Run specs
       run: crystal spec -v
