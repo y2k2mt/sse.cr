@@ -4,14 +4,18 @@ describe HTTP::ServerSentEvents::Handler do
   it "receive 3 events" do
     counter = 0
     server = HTTP::Server.new [
-      HTTP::ServerSentEvents::Handler.new { |es, _|
-        es.source {
+      (HTTP::ServerSentEvents::Handler.new do |event_stream, _|
+        event_stream.source do
           sleep 1.seconds
+          counter += 1
+          first_event = counter.to_s
+          counter += 1
+          second_event = counter.to_s
           HTTP::ServerSentEvents::EventMessage.new(
-            data: ["#{counter += 1}", "#{counter += 1}"],
+            data: [first_event, second_event],
           )
-        }
-      },
+        end
+      end),
     ]
     port = Random.rand(40000..65535)
     spawn do
@@ -37,16 +41,16 @@ describe HTTP::ServerSentEvents::Handler do
 
   it "receive all events" do
     server = HTTP::Server.new [
-      HTTP::ServerSentEvents::Handler.new { |es, _|
-        es.source("usermessage") {
+      (HTTP::ServerSentEvents::Handler.new do |event_stream, _|
+        event_stream.source("usermessage") do
           sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
-        }
-      },
+        end
+      end),
     ]
     port = Random.rand(40000..65535)
     spawn do
@@ -76,23 +80,23 @@ describe HTTP::ServerSentEvents::Handler do
 
   it "receive multiple events" do
     server = HTTP::Server.new [
-      HTTP::ServerSentEvents::Handler.new { |es, _|
-        es.source("57f") {
+      (HTTP::ServerSentEvents::Handler.new do |event_stream, _|
+        event_stream.source("57f") do
           sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
-        }.source("67g") {
+        end.source("67g") do
           sleep 1.3.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
             retry: 1000,
           )
-        }
-      },
+        end
+      end),
     ]
     port = Random.rand(40000..65535)
     spawn do
@@ -152,23 +156,23 @@ describe HTTP::ServerSentEvents::Handler do
 
   it "receive prallel events" do
     server = HTTP::Server.new [
-      HTTP::ServerSentEvents::Handler.new { |es, _|
-        es.source("57f") {
+      (HTTP::ServerSentEvents::Handler.new do |event_stream, _|
+        event_stream.source("57f") do
           sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
-        }.source("67g") {
+        end.source("67g") do
           sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
             retry: 1000,
           )
-        }
-      },
+        end
+      end),
     ]
     port = Random.rand(40000..65535)
     spawn do
@@ -204,23 +208,23 @@ describe HTTP::ServerSentEvents::Handler do
 
   it "receive prallel events with default event" do
     server = HTTP::Server.new [
-      HTTP::ServerSentEvents::Handler.new { |es, _|
-        es.source {
+      (HTTP::ServerSentEvents::Handler.new do |event_stream, _|
+        event_stream.source do
           sleep 2.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43e",
             data: ["foo", "bar"],
             retry: 2000,
           )
-        }.source("67g") {
+        end.source("67g") do
           sleep 1.seconds
           HTTP::ServerSentEvents::EventMessage.new(
             id: "43g",
             data: ["baz", "qux"],
             retry: 1000,
           )
-        }
-      },
+        end
+      end),
     ]
     port = Random.rand(40000..65535)
     spawn do

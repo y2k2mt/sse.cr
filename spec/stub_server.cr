@@ -15,8 +15,10 @@ module HTTP::ServerSentEvents
         context.response.print '\n'
         counter = 1
         loop do
-          context.response.print("data: #{counter += 1}\n")
-          context.response.print("data: #{counter += 1}\n\n")
+          counter += 1
+          context.response.print("data: #{counter}\n")
+          counter += 1
+          context.response.print("data: #{counter}\n\n")
           context.response.flush
           sleep 2.seconds
         end
@@ -28,7 +30,8 @@ module HTTP::ServerSentEvents
         context.response.print '\n'
         id = 1
         loop do
-          context.response.print("id: #{id += 1}\n")
+          id += 1
+          context.response.print("id: #{id}\n")
           context.response.print("retry: 2000\n")
           context.response.print("event: usermessage\n")
           context.response.print("data: foo\n")
